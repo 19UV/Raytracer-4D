@@ -12,7 +12,10 @@ static const unsigned int image_height = 512;
 int main(int argc, const char* argv[]) {
 	Image image = image_create(image_width, image_height);
 
-	struct Object hypersphere = { .type = OHypersphere };
+	struct Object hypersphere = {
+		.type = OHypersphere,
+		.position = { 2.0f, 0.0f, 0.0f, 0.0f }
+	};
 
 	Vector4 ray_origin = { 0.0f, 0.0f, -2.5f, 0.0f };
 

@@ -13,6 +13,12 @@ bool hypersphere_intersect(struct Object*, struct Ray, struct Hit*);
 bool intersect(struct Object* object, struct Ray ray, struct Hit* hit) {
 	assert(object != NULL);
 
+	/* We can make it seem like we're transforming the object by transforming the ray */
+	ray.origin.x -= object->position.x;
+	ray.origin.y -= object->position.y;
+	ray.origin.z -= object->position.z;
+	ray.origin.w -= object->position.w;
+
 	switch(object->type) {
 		case OHypersphere:
 			return hypersphere_intersect(object, ray, hit);
