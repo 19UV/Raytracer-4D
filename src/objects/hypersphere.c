@@ -1,6 +1,6 @@
 #include "object.h"
 
-#include "math.h"
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <assert.h>
