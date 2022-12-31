@@ -7,7 +7,8 @@
 #include "hit.h"
 
 enum ObjectType {
-	OHypersphere
+	OHypersphere,
+	OHyperplane
 };
 
 struct Object {

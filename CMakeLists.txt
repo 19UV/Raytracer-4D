@@ -13,6 +13,7 @@ set(FILES ${FILES}
 
 	src/object.c
 	src/objects/hypersphere.c
+	src/objects/hyperplane.c
 
 	src/main.c
 )

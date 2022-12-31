@@ -8,6 +8,7 @@
 #include "hit.h"
 
 bool hypersphere_intersect(struct Object*, struct Ray, struct Hit*);
+bool hyperplane_intersect(struct Object*, struct Ray, struct Hit*);
 
 /* NOTE: object MUST NOT be NULL, but hit MAY be NULL */
 bool intersect(struct Object* object, struct Ray ray, struct Hit* hit) {
@@ -22,6 +23,8 @@ bool intersect(struct Object* object, struct Ray ray, struct Hit* hit) {
 	switch(object->type) {
 		case OHypersphere:
 			return hypersphere_intersect(object, ray, hit);
+		case OHyperplane:
+			return hyperplane_intersect(object, ray, hit);
 	}
 
 	return false;
