@@ -43,6 +43,16 @@ Pixel* image_at(Image* image, unsigned int x, unsigned int y) {
 	return &image->data[offset];
 }
 
+Pixel from_color(Color color) {
+#define TO_U8( x) (uint8_t)(x * 255.0f)
+	return (Pixel){
+		.r = TO_U8(color.r),
+		.g = TO_U8(color.g),
+		.b = TO_U8(color.b)
+	};
+#undef TO_U8
+}
+
 bool image_write_png(Image* image, const char* path) {
 	assert(image != NULL);
 	assert(image->data != NULL);

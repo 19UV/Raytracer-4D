@@ -3,7 +3,9 @@
 #include "image.h"
 #include "vector.h"
 #include "ray.h"
+
 #include "object.h"
+#include "material.h"
 
 /* Oh no! Global Variables! They will make code more concise, so I will use them. :) */
 static const unsigned int image_width = 512;
@@ -12,9 +14,17 @@ static const unsigned int image_height = 512;
 int main(int argc, const char* argv[]) {
 	Image image = image_create(image_width, image_height);
 
+	struct Material materials[] = {
+		{
+			.albedo = { 0.0f, 1.0f, 0.0f },
+			.roughness = 0.5f
+		}
+	};
+
 	struct Object hypersphere = {
 		.type = OHypersphere,
-		.position = { 2.0f, 0.0f, 0.0f, 0.0f }
+		.position = { 0.0f, 1.0f, 0.0f, 0.0f },
+		.material = 0
 	};
 
 	Vector4 ray_origin = { 0.0f, 0.0f, -2.5f, 0.0f };
@@ -39,7 +49,8 @@ int main(int argc, const char* argv[]) {
 			struct Hit hit;
 			*image_at(&image, x, y) =
 				intersect(&hypersphere, ray, &hit)
-					? (Pixel){ 255, 0, 0 } : (Pixel){ 0, 0, 0 };
+					? from_color(materials[hit.object->material].albedo)
+					: (Pixel){ 0, 0, 0 };
 		}
 	}
 
