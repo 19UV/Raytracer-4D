@@ -43,14 +43,22 @@ Pixel* image_at(Image* image, unsigned int x, unsigned int y) {
 	return &image->data[offset];
 }
 
+static inline uint8_t to_uint8(float value) {
+	if(value < 0.0f) {
+		return 0x00;
+	} else if(value > 1.0f) {
+		return 0xff;
+	} else {
+		return (uint8_t)(value * 255.0f);
+	}
+}
+
 Pixel from_color(Color color) {
-#define TO_U8( x) (uint8_t)(x * 255.0f)
 	return (Pixel){
-		.r = TO_U8(color.r),
-		.g = TO_U8(color.g),
-		.b = TO_U8(color.b)
+		.r = to_uint8(color.r),
+		.g = to_uint8(color.g),
+		.b = to_uint8(color.b)
 	};
-#undef TO_U8
 }
 
 bool image_write_png(Image* image, const char* path) {

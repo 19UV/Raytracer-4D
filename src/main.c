@@ -7,64 +7,47 @@
 
 #include "object.h"
 #include "material.h"
+#include "light.h"
+
+#define ARR_LEN( arr) (sizeof( arr) / sizeof( arr[0]))
 
 /* Oh no! Global Variables! They will make code more concise, so I will use them. :) */
 static const unsigned int image_width = 512;
 static const unsigned int image_height = 512;
-
-static inline Color normal_to_color(Vector4 normal) {
-	assert(normal.x >= -1.0f);
-	assert(normal.x <=  1.0f);
-
-	assert(normal.y >= -1.0f);
-	assert(normal.y <=  1.0f);
-
-	assert(normal.z >= -1.0f);
-	assert(normal.z <=  1.0f);
-
-	assert(normal.w >= -1.0f);
-	assert(normal.w <=  1.0f);
-
-	return (Color){
-		.r = normal.x * 0.5f + 0.5f,
-		.g = normal.y * 0.5f + 0.5f,
-		.b = normal.z * 0.5f + 0.5f
-	};
-}
 
 int main(int argc, const char* argv[]) {
 	Image image = image_create(image_width, image_height);
 
 	struct Material materials[] = {
 		{
-			.albedo = { 0.0f, 0.0f, 1.0f },
+			.albedo = { 0.25, 1.0f, 0.25 },
 			.roughness = 0.5f
+		}
+	};
+
+	struct Light lights[] = {
+		{
+			.type = LAmbient,
+			.color = { 1.0f, 0.5f, 0.5f },
+			.data.ambient.intensity = 0.2f
 		},
 		{
-			.albedo = { 1.0f, 0.0f, 0.0f },
-			.roughness = 0.5f
+			.type = LDirectional,
+			.color = { 0.5f, 1.0f, 0.5f },
+			.data.directional.direction = vector_normalize((Vector4){ 1.0f, 1.0f, -1.0f, 0.0f })
 		},
 		{
-			.albedo = { 0.0f, 1.0f, 0.0f },
-			.roughness = 0.1f
+			.type = LPoint,
+			.color = { 0.5f, 0.5f, 1.0f },
+			.data.point.position = { -5.0f, 5.0f, -5.0f, 2.5f }
 		}
 	};
 
 	struct Object objects[] = {
 		{
 			.type = OHypersphere,
-			.position = { 1.0f, 0.0f, 0.0f, 0.0f },
+			.position = { 0.0f, 0.0f, 0.0f, 0.0f },
 			.material = 0
-		},
-		{
-			.type = OHypersphere,
-			.position = { -1.0f, 0.0f, 0.0f, 0.0f },
-			.material = 1
-		},
-		{
-			.type = OHyperplane,
-			.position = { 0.0f, -1.0f, 0.0f, 0.0f },
-			.material = 2
 		}
 	};
 
@@ -73,7 +56,7 @@ int main(int argc, const char* argv[]) {
 		.position = { 0.0f, 0.0f, 0.0f, 0.0f },
 		.data.group = {
 			.children = objects,
-			.children_count = sizeof(objects) / sizeof(struct Object)
+			.children_count = ARR_LEN(objects)
 		}
 	};
 
@@ -96,11 +79,26 @@ int main(int argc, const char* argv[]) {
 				}
 			};
 
+			Color color = { 0.0f, 0.0f, 0.0f };
+
 			struct Hit hit;
-			*image_at(&image, x, y) =
-				intersect(&scene, ray, &hit)
-					? from_color(normal_to_color(hit.normal))
-					: (Pixel){ 0, 0, 0 };
+			if(intersect(&scene, ray, &hit)) {
+				struct Object* object = hit.object;
+				struct Material* material = &materials[object->material];
+
+				for(unsigned int light = 0; light < ARR_LEN(lights); light++) {
+					Color _color = light_color(&lights[light], hit);
+
+					color.r += _color.r;
+					color.g += _color.g;
+					color.b += _color.b;
+				}
+				color.r *= material->albedo.r;
+				color.g *= material->albedo.g;
+				color.b *= material->albedo.b;
+			}
+
+			*image_at(&image, x, y) = from_color(color);
 		}
 	}
 

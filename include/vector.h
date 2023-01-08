@@ -8,3 +8,6 @@ typedef struct Vector4 {
 /* TODO: Run a benchmark to see if its faster to pass by pointers, or by value */
 
 float vector_dot(Vector4 a, Vector4 b);
+
+float vector_length(Vector4 vector);
+Vector4 vector_normalize(Vector4 vector);
