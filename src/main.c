@@ -18,13 +18,33 @@ int main(int argc, const char* argv[]) {
 		{
 			.albedo = { 0.0f, 1.0f, 0.0f },
 			.roughness = 0.5f
+		},
+		{
+			.albedo = { 1.0f, 0.0f, 0.0f },
+			.roughness = 0.5f
 		}
 	};
 
-	struct Object hypersphere = {
-		.type = OHypersphere,
-		.position = { 0.0f, 1.0f, 0.0f, 0.0f },
-		.material = 0
+	struct Object objects[] = {
+		{
+			.type = OHypersphere,
+			.position = { 1.0f, 0.0f, 0.0f, 0.0f },
+			.material = 0
+		},
+		{
+			.type = OHypersphere,
+			.position = { -1.0f, 0.0f, 0.0f, 0.0f },
+			.material = 1
+		}
+	};
+
+	struct Object scene = {
+		.type = OGroup,
+		.position = { 0.0f, 0.0f, 0.0f, 0.0f },
+		.data.group = {
+			.children = objects,
+			.children_count = sizeof(objects) / sizeof(struct Object)
+		}
 	};
 
 	Vector4 ray_origin = { 0.0f, 0.0f, -2.5f, 0.0f };
@@ -48,7 +68,7 @@ int main(int argc, const char* argv[]) {
 
 			struct Hit hit;
 			*image_at(&image, x, y) =
-				intersect(&hypersphere, ray, &hit)
+				intersect(&scene, ray, &hit)
 					? from_color(materials[hit.object->material].albedo)
 					: (Pixel){ 0, 0, 0 };
 		}

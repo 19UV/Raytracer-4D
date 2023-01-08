@@ -12,6 +12,7 @@ set(FILES ${FILES}
 	src/image.c
 
 	src/object.c
+	src/objects/group.c
 	src/objects/hypersphere.c
 	src/objects/hyperplane.c
 

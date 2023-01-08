@@ -7,6 +7,7 @@
 #include "ray.h"
 #include "hit.h"
 
+bool group_intersect(struct Object*, struct Ray, struct Hit*);
 bool hypersphere_intersect(struct Object*, struct Ray, struct Hit*);
 bool hyperplane_intersect(struct Object*, struct Ray, struct Hit*);
 
@@ -21,6 +22,8 @@ bool intersect(struct Object* object, struct Ray ray, struct Hit* hit) {
 	ray.origin.w -= object->position.w;
 
 	switch(object->type) {
+		case OGroup:
+			return group_intersect(object, ray, hit);
 		case OHypersphere:
 			return hypersphere_intersect(object, ray, hit);
 		case OHyperplane:
