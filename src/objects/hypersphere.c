@@ -95,6 +95,12 @@ bool hypersphere_intersect(struct Object* object, struct Ray ray, struct Hit* hi
 	/* After all these checks, we now know that we hit the sphere */
 	if(hit != NULL) { /* Because a NULL hit is valid (we just want to know IF it hits) */
 		hit->t = t;
+
+		hit->position = ray_at(ray, t);
+
+		/* Because the hypersphere is radius 1, the vector will always be normalized */
+		hit->normal = hit->position;
+
 		hit->object = object;
 	}
 

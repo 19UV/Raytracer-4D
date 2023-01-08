@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 
 #include "image.h"
 #include "vector.h"
@@ -11,17 +12,41 @@
 static const unsigned int image_width = 512;
 static const unsigned int image_height = 512;
 
+static inline Color normal_to_color(Vector4 normal) {
+	assert(normal.x >= -1.0f);
+	assert(normal.x <=  1.0f);
+
+	assert(normal.y >= -1.0f);
+	assert(normal.y <=  1.0f);
+
+	assert(normal.z >= -1.0f);
+	assert(normal.z <=  1.0f);
+
+	assert(normal.w >= -1.0f);
+	assert(normal.w <=  1.0f);
+
+	return (Color){
+		.r = normal.x * 0.5f + 0.5f,
+		.g = normal.y * 0.5f + 0.5f,
+		.b = normal.z * 0.5f + 0.5f
+	};
+}
+
 int main(int argc, const char* argv[]) {
 	Image image = image_create(image_width, image_height);
 
 	struct Material materials[] = {
 		{
-			.albedo = { 0.0f, 1.0f, 0.0f },
+			.albedo = { 0.0f, 0.0f, 1.0f },
 			.roughness = 0.5f
 		},
 		{
 			.albedo = { 1.0f, 0.0f, 0.0f },
 			.roughness = 0.5f
+		},
+		{
+			.albedo = { 0.0f, 1.0f, 0.0f },
+			.roughness = 0.1f
 		}
 	};
 
@@ -35,6 +60,11 @@ int main(int argc, const char* argv[]) {
 			.type = OHypersphere,
 			.position = { -1.0f, 0.0f, 0.0f, 0.0f },
 			.material = 1
+		},
+		{
+			.type = OHyperplane,
+			.position = { 0.0f, -1.0f, 0.0f, 0.0f },
+			.material = 2
 		}
 	};
 
@@ -69,7 +99,7 @@ int main(int argc, const char* argv[]) {
 			struct Hit hit;
 			*image_at(&image, x, y) =
 				intersect(&scene, ray, &hit)
-					? from_color(materials[hit.object->material].albedo)
+					? from_color(normal_to_color(hit.normal))
 					: (Pixel){ 0, 0, 0 };
 		}
 	}

@@ -48,6 +48,16 @@ bool hyperplane_intersect(struct Object* object, struct Ray ray, struct Hit* hit
 
 	if(hit != NULL) {
 		hit->t = t;
+
+		hit->position = ray_at(ray, t);
+
+		hit->normal = (Vector4){
+			.x = 0.0f,
+			.y = ray.origin.y < 0.0f ? -1.0f : 1.0f,
+			.z = 0.0f,
+			.w = 0.0f
+		};
+
 		hit->object = object;
 	}
 

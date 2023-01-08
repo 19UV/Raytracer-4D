@@ -16,6 +16,8 @@ set(FILES ${FILES}
 	src/objects/hypersphere.c
 	src/objects/hyperplane.c
 
+	src/ray.c
+
 	src/main.c
 )
 
