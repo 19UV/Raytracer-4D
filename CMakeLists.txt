@@ -25,3 +25,7 @@ set(FILES ${FILES}
 
 add_executable(raytracer4d ${FILES})
 target_include_directories(raytracer4d PRIVATE include/ extern/)
+
+if(NOT MSVC)
+	target_link_libraries(raytracer4d PRIVATE m)
+endif()
