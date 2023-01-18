@@ -25,6 +25,7 @@ struct Scene {
 static const unsigned int image_width = 512;
 static const unsigned int image_height = 512;
 
+static const unsigned int sample_count = 10;
 static const unsigned int ray_depth = 10;
 
 static inline Color hit_color(struct Hit hit, struct Scene* scene) {
@@ -74,10 +75,10 @@ static inline Color ray_color(struct Ray ray, struct Scene* scene) {
 
 		float roughness = scene->materials[hit.object->material].roughness;
 		ray.direction = vector_reflect(ray.direction, (Vector4){
-			.x = hit.normal.x + roughness * random_float_range(-0.5f, 0.5f),
-			.y = hit.normal.y + roughness * random_float_range(-0.5f, 0.5f),
-			.z = hit.normal.z + roughness * random_float_range(-0.5f, 0.5f),
-			.w = hit.normal.w + roughness * random_float_range(-0.5f, 0.5f)
+			.x = hit.normal.x + roughness * random_float_range(-1.0f, 1.0f),
+			.y = hit.normal.y + roughness * random_float_range(-1.0f, 1.0f),
+			.z = hit.normal.z + roughness * random_float_range(-1.0f, 1.0f),
+			.w = hit.normal.w + roughness * random_float_range(-1.0f, 1.0f)
 		});
 	}
 	
@@ -165,8 +166,21 @@ int main(int argc, const char* argv[]) {
 					1.0f, 0.0f
 				}
 			};
+
+			Color pixel_color = { 0.0f, 0.0f, 0.0f };
+			for(unsigned int i = 0; i < sample_count; i++) {
+				Color _pixel_color = ray_color(ray, &scene);
+
+				pixel_color.r += _pixel_color.r;
+				pixel_color.g += _pixel_color.g;
+				pixel_color.b += _pixel_color.b;
+			}
+
+			pixel_color.r /= (float)sample_count;
+			pixel_color.g /= (float)sample_count;
+			pixel_color.b /= (float)sample_count;
 			
-			*image_at(&image, x, y) = from_color(ray_color(ray, &scene));
+			*image_at(&image, x, y) = from_color(pixel_color);
 		}
 	}
 
