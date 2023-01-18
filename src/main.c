@@ -22,8 +22,8 @@ struct Scene {
 };
 
 /* Oh no! Global Variables! They will make code more concise, so I will use them. :) */
-static const unsigned int image_width = 512;
-static const unsigned int image_height = 512;
+static const unsigned int image_width = 960;
+static const unsigned int image_height = 540;
 
 static const unsigned int sample_count = 10;
 static const unsigned int ray_depth = 10;
@@ -150,6 +150,7 @@ int main(int argc, const char* argv[]) {
 
 	Vector4 ray_origin = { 0.0f, 0.0f, -2.5f, 0.0f };
 
+	const float aspect_ratio = (float)image_width / (float)image_height;
 	for(unsigned int y = 0; y < image_height; y++) {
 		const float v = (float)y / (float)image_height;
 
@@ -166,6 +167,7 @@ int main(int argc, const char* argv[]) {
 					1.0f, 0.0f
 				}
 			};
+			ray.direction.x *= aspect_ratio;
 
 			Color pixel_color = { 0.0f, 0.0f, 0.0f };
 			for(unsigned int i = 0; i < sample_count; i++) {
