@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "random.h"
+
 #include "image.h"
 #include "vector.h"
 #include "ray.h"
@@ -11,17 +13,90 @@
 
 #define ARR_LEN( arr) (sizeof( arr) / sizeof( arr[0]))
 
+struct Scene {
+	struct Object root;
+	struct Material* materials;
+
+	unsigned int light_count;
+	struct Light* lights;
+};
+
 /* Oh no! Global Variables! They will make code more concise, so I will use them. :) */
 static const unsigned int image_width = 512;
 static const unsigned int image_height = 512;
 
+static const unsigned int ray_depth = 10;
+
+static inline Color hit_color(struct Hit hit, struct Scene* scene) {
+	Color color = { 0.0f, 0.0f, 0.0f };
+	
+	struct Object* object = hit.object;
+	struct Material* material = &scene->materials[object->material];
+
+	for(unsigned int light = 0; light < scene->light_count; light++) {
+		Color _light_color = light_color(&scene->lights[light], hit);
+
+		color.r += _light_color.r;
+		color.g += _light_color.g;
+		color.b += _light_color.b;
+	}
+
+	color.r *= material->albedo.r;
+	color.g *= material->albedo.g;
+	color.b *= material->albedo.b;
+
+	return color;
+}
+
+static inline Color ray_color(struct Ray ray, struct Scene* scene) {
+	struct Hit hit;
+
+	Color color = { 0.0f, 0.0f, 0.0f };
+	float weight = 1.0f;
+
+	for(unsigned int i = 0; i < ray_depth; i++) {
+		if(!intersect(&scene->root, ray, &hit)) {
+			break;
+		}
+
+		Color _hit_color = hit_color(hit, scene);
+		color.r += _hit_color.r * weight;
+		color.g += _hit_color.g * weight;
+		color.b += _hit_color.b * weight;
+		weight *= 0.5f;
+
+#define SMALL_VALUE 0.0001f
+		ray.origin.x = hit.position.x + hit.normal.x * SMALL_VALUE;
+		ray.origin.y = hit.position.y + hit.normal.y * SMALL_VALUE;
+		ray.origin.z = hit.position.z + hit.normal.z * SMALL_VALUE;
+		ray.origin.w = hit.position.w + hit.normal.w * SMALL_VALUE;
+#undef SMALL_VALUE
+
+		float roughness = scene->materials[hit.object->material].roughness;
+		ray.direction = vector_reflect(ray.direction, (Vector4){
+			.x = hit.normal.x + roughness * random_float_range(-0.5f, 0.5f),
+			.y = hit.normal.y + roughness * random_float_range(-0.5f, 0.5f),
+			.z = hit.normal.z + roughness * random_float_range(-0.5f, 0.5f),
+			.w = hit.normal.w + roughness * random_float_range(-0.5f, 0.5f)
+		});
+	}
+	
+	return color;
+}
+
 int main(int argc, const char* argv[]) {
+	random_seed();
+	
 	Image image = image_create(image_width, image_height);
 
 	struct Material materials[] = {
 		{
-			.albedo = { 0.25, 1.0f, 0.25 },
+			.albedo = { 0.25f, 1.0f, 0.25f },
 			.roughness = 0.5f
+		},
+		{
+			.albedo = { 0.25f, 0.25f, 1.0f },
+			.roughness = 0.1f
 		}
 	};
 
@@ -48,16 +123,28 @@ int main(int argc, const char* argv[]) {
 			.type = OHypersphere,
 			.position = { 0.0f, 0.0f, 0.0f, 0.0f },
 			.material = 0
+		},
+		{
+			.type = OHyperplane,
+			.position = { 0.0f, -1.0f, 0.0f, 0.0f },
+			.material = 1
 		}
 	};
 
-	struct Object scene = {
-		.type = OGroup,
-		.position = { 0.0f, 0.0f, 0.0f, 0.0f },
-		.data.group = {
-			.children = objects,
-			.children_count = ARR_LEN(objects)
-		}
+	struct Scene scene = {
+		.root = {
+			.type = OGroup,
+			.position = { 0.0f, 0.0f, 0.0f, 0.0f },
+			.data.group = {
+				.children = objects,
+				.children_count = ARR_LEN(objects)
+			}
+		},
+	
+		.materials = materials,
+
+		.light_count = ARR_LEN(lights),
+		.lights = lights
 	};
 
 	Vector4 ray_origin = { 0.0f, 0.0f, -2.5f, 0.0f };
@@ -78,27 +165,8 @@ int main(int argc, const char* argv[]) {
 					1.0f, 0.0f
 				}
 			};
-
-			Color color = { 0.0f, 0.0f, 0.0f };
-
-			struct Hit hit;
-			if(intersect(&scene, ray, &hit)) {
-				struct Object* object = hit.object;
-				struct Material* material = &materials[object->material];
-
-				for(unsigned int light = 0; light < ARR_LEN(lights); light++) {
-					Color _color = light_color(&lights[light], hit);
-
-					color.r += _color.r;
-					color.g += _color.g;
-					color.b += _color.b;
-				}
-				color.r *= material->albedo.r;
-				color.g *= material->albedo.g;
-				color.b *= material->albedo.b;
-			}
-
-			*image_at(&image, x, y) = from_color(color);
+			
+			*image_at(&image, x, y) = from_color(ray_color(ray, &scene));
 		}
 	}
 

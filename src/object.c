@@ -21,14 +21,25 @@ bool intersect(struct Object* object, struct Ray ray, struct Hit* hit) {
 	ray.origin.z -= object->position.z;
 	ray.origin.w -= object->position.w;
 
+	bool hits = false;
 	switch(object->type) {
 		case OGroup:
-			return group_intersect(object, ray, hit);
+			hits = group_intersect(object, ray, hit);
+			break;
 		case OHypersphere:
-			return hypersphere_intersect(object, ray, hit);
+			hits = hypersphere_intersect(object, ray, hit);
+			break;
 		case OHyperplane:
-			return hyperplane_intersect(object, ray, hit);
+			hits = hyperplane_intersect(object, ray, hit);
+			break;
 	}
 
-	return false;
+	if(hit != NULL) {
+		hit->position.x += object->position.x;
+		hit->position.y += object->position.y;
+		hit->position.z += object->position.z;
+		hit->position.w += object->position.w;
+	}
+
+	return hits;
 }

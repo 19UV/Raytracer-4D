@@ -30,3 +30,14 @@ Vector4 vector_normalize(Vector4 vector) {
 		.w = vector.w / length
 	};
 }
+
+Vector4 vector_reflect(Vector4 incident, Vector4 normal) {
+	const float dot = vector_dot(incident, normal);
+
+	return (Vector4){
+		.x = incident.x - 2.0f * dot * normal.x,
+		.y = incident.y - 2.0f * dot * normal.y,
+		.z = incident.z - 2.0f * dot * normal.z,
+		.w = incident.w - 2.0f * dot * normal.w
+	};
+}

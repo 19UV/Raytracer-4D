@@ -11,3 +11,5 @@ float vector_dot(Vector4 a, Vector4 b);
 
 float vector_length(Vector4 vector);
 Vector4 vector_normalize(Vector4 vector);
+
+Vector4 vector_reflect(Vector4 incident, Vector4 normal);
